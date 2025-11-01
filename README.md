@@ -107,6 +107,7 @@ Respuesta 201 Created
 ## 📊 MODELO DE DATOS
 
 ### Diagrama Entidad-Relación
+ ```
   Custumer Service
 ┌─────────────────────────────┐
 │          CUSTOMERS          │
