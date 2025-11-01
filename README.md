@@ -1,4 +1,4 @@
-# 📄 TRABAJO: ORDER SERVICE 
+<img width="158" height="81" alt="image" src="https://github.com/user-attachments/assets/96e1def9-80ac-4fca-8438-019bcd0006ba" /># 📄 TRABAJO: ORDER SERVICE 
 
 **Módulo:** Spring Boot Experto 
 **Fecha de entrega:** 01/11/2025  
@@ -107,15 +107,18 @@ Respuesta 201 Created
 ## 📊 MODELO DE DATOS
 
 ### Diagrama Entidad-Relación
-```
+``` custumer-service
 ┌─────────────────────────────┐
-│            ORDERS           │
+│          CUSTOMERS          │
 ├─────────────────────────────┤
 │ PK  id                      │
-│     order_number (UNIQUE)   │
-│     user_id                 │
-│     status                  │
-│     total_amount            │
+│     document_type           │
+│     document_number         │
+│     first_name              │
+│     last_name               | 
+|     email                   | 
+│     phone                   | 
+|     status                  |
 │     created_at              │
 │     updated_at              │
 └─────────────┬───────────────┘
@@ -125,7 +128,7 @@ Respuesta 201 Created
               │ N                        
               ▼                        
 ┌─────────────────────────────┐
-│        ORDER_ITEMS          │
+│        CLIENT_PRODUCTS      │
 ├─────────────────────────────┤
 │ PK  id                      │
 │ FK  order_id                │
@@ -137,11 +140,11 @@ Respuesta 201 Created
                                
      product_id    ────────────────────┐
                                        │
-        user_id    ──────────┐         │
-                             │         │
-                             ▼         ▼
-                    User Service   Product Service
-                      (userdb)      (productdb)
+                                       │
+                                       │
+                                       ▼
+                                 Product Service
+                                  (productdb)
 ```
 
 ### Tabla: orders
