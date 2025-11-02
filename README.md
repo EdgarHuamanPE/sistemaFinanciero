@@ -129,14 +129,22 @@ Respuesta 201 Created
               │ N                        
               ▼                        
 ┌─────────────────────────────┐
-│        CLIENT_PRODUCTS      │
+│     CUSTOMER_PRODUCTS       │
 ├─────────────────────────────┤
 │ PK  id                      │
-│ FK  order_id                │
+│ FK  customer_id             │
 │     product_id              │
-│     quantity                │
-│     unit_price              │
-│     subtotal                │
+│     account_number          │
+│     start_date              |
+|     end_date                |
+|     status                  │
+│     balance                 | 
+|     interest_rate           |  
+|     currency                |
+|     contract_number         | 
+|     channel_origin          |
+|     created_at              |
+|     updated_at              │
 └─────────────────────────────┘
                                
      product_id    ────────────────────┐
@@ -146,6 +154,23 @@ Respuesta 201 Created
                                        ▼
                                  Product Service
                                   (productdb)
+
+                          ┌─────────────────────────────┐
+                          │         PRODUCTS            │
+                          ├─────────────────────────────┤
+                          │ PK  id                      │
+                          │     code                    │
+                          │     name                    │
+                          │     type                    |
+                          |     category                |
+                          |     currency                |
+                          |     interest_rate           | 
+                          |     description             | 
+                          |     status                  |      
+                          │     created_at              |
+                          |     updated_at              │
+                          └─────────────────────────────┘
+
 ```
 
 ### Tabla: orders
