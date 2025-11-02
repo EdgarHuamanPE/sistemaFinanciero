@@ -139,8 +139,6 @@ Respuesta 201 Created
 |     end_date                |
 |     status                  │
 │     balance                 | 
-|     interest_rate           |  
-|     currency                |
 |     contract_number         | 
 |     channel_origin          |
 |     created_at              |
