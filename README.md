@@ -272,8 +272,6 @@ INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal) V
       "end_date": NULL,
       "status":"ACTIVO",
       "balance": 3500.75,
-      "interest_rate": 0.50,
-      "currency": "PEN",
       "contract_number": "CTR-20220510-01",
       "channel_origin": "Banca Móvil"
     },
@@ -284,8 +282,6 @@ INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal) V
       "end_date": NULL,
       "status":"ACTIVO",
       "balance": -1200.00,
-      "interest_rate": 45.00,
-      "currency": "PEN",
       "contract_number": "CTR-20230315-02",
       "channel_origin": "Oficina"
     }
