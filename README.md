@@ -282,6 +282,18 @@ INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal) V
       "currency": "PEN",
       "contract_number": "CTR-20220510-01",
       "channel_origin": "Banca Móvil"
+    },
+     {
+      "productId": 4,
+      "account_number": "4111-1234-5678-9010",
+      "start_date": "2023-03-15",
+      "end_date": NULL,
+      "status":"ACTIVO",
+      "balance": -1200.00,
+      "interest_rate": 45.00,
+      "currency": "PEN",
+      "contract_number": "CTR-20230315-02",
+      "channel_origin": "Oficina"
     }
   ]
 }
@@ -291,29 +303,23 @@ INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal) V
 ```json
 {
   "id": 1,
-  "orderNumber": "ORD-2025-001",
-  "user": {
-    "id": 1,
-    "username": "john_doe",
-    "fullName": "John Doe",
-    "email": "john@example.com"
-  },
-  "items": [
+  "firstName": "Juan",
+  "lastName": "Pérez",
+  "documentType": "DNI",
+  "documentNumber": "70123456",
+  "products": [
     {
-      "id": 1,
-      "product": {
-        "id": 1,
-        "name": "Laptop Dell XPS 15",
-        "price": 1299.99
-      },
-      "quantity": 2,
-      "unitPrice": 1299.99,
-      "subtotal": 2599.98
-    }
+      "typeProduct": "AHORRO",
+      "name": "Cuenta de Ahorros Clásica",
+      "balance": 3500.75
+    },
+     {
+      "typeProduct": "CRÉDITO",
+      "name": "Préstamo Personal",
+      "balance": -1200.00
+    },
+
   ],
-  "totalAmount": 2999.97,
-  "status": "PENDING",
-  "createdAt": "2025-01-20T10:30:00",
 }
 ```
 
