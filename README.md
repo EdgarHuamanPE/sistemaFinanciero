@@ -200,56 +200,152 @@ Respuesta 201 Created
 
 ### Script SQL
 ```sql
--- Tabla de órdenes
-CREATE TABLE orders (
+-- tabla producto
+CREATE TABLE products (
     id BIGSERIAL PRIMARY KEY,
-    order_number VARCHAR(50) NOT NULL UNIQUE,
-    user_id BIGINT NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
-    total_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
+    code VARCHAR(20) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    category VARCHAR(50),
+    currency VARCHAR(3),
+    interest_rate DECIMAL(5,2),
+    description VARCHAR(255),
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVO',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    
-    CONSTRAINT chk_status CHECK (status IN ('PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED')),
-    CONSTRAINT chk_total_positive CHECK (total_amount >= 0)
+    CONSTRAINT chk_product_status CHECK (status IN ('ACTIVO', 'INACTIVO', 'SUSPENDIDO', 'CERRADO'))			
 );
 
-CREATE INDEX idx_orders_user_id ON orders(user_id);
-CREATE INDEX idx_orders_status ON orders(status);
-CREATE INDEX idx_orders_created_at ON orders(created_at);
+CREATE INDEX idx_products_created_at ON products(created_at DESC);
+CREATE INDEX idx_products_type ON products(type);
+CREATE INDEX idx_products_category ON products(category);
+CREATE INDEX idx_products_type_category ON products(type, category);
+CREATE INDEX idx_products_status ON products(status);
 
--- Tabla de items
-CREATE TABLE order_items (
+--tabla cliente
+CREATE TABLE customers (
     id BIGSERIAL PRIMARY KEY,
-    order_id BIGINT NOT NULL,
-    product_id BIGINT NOT NULL,
-    quantity INTEGER NOT NULL,
-    unit_price NUMERIC(10, 2) NOT NULL,
-    subtotal NUMERIC(10, 2) NOT NULL,
-    
-    CONSTRAINT fk_order FOREIGN KEY (order_id) 
-        REFERENCES orders(id) ON DELETE CASCADE,
-    CONSTRAINT chk_quantity_positive CHECK (quantity > 0),
-    CONSTRAINT chk_unit_price_positive CHECK (unit_price >= 0),
-    CONSTRAINT chk_subtotal_positive CHECK (subtotal >= 0)
+    document_type VARCHAR(10) NOT NULL,
+    document_number VARCHAR(20) UNIQUE NOT NULL,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(100),
+    phone VARCHAR(20),
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVO',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,	
+    CONSTRAINT chk_customer_status CHECK (status IN ('ACTIVO', 'INACTIVO', 'SUSPENDIDO', 'CERRADO')),
+    CONSTRAINT chk_customer_document_type CHECK (document_type IN ('DNI', 'RUC', 'CE', 'PAS'))						
 );
 
-CREATE INDEX idx_order_items_order_id ON order_items(order_id);
-CREATE INDEX idx_order_items_product_id ON order_items(product_id);
+CREATE INDEX idx_customer_document_type ON customer(document_type);
+CREATE INDEX idx_customer_status ON customer(status);
+CREATE INDEX idx_customer_name ON customer(first_name, last_name);
+CREATE INDEX idx_customer_email ON customer(email);
 
--- Datos de prueba
-INSERT INTO orders (order_number, user_id, status, total_amount) VALUES
-('ORD-2025-001', 1, 'CONFIRMED', 2849.97),
-('ORD-2025-002', 2, 'PENDING', 1199.98),
-('ORD-2025-003', 1, 'SHIPPED', 149.99);
 
-INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal) VALUES
-(1, 1, 1, 1299.99, 1299.99),
-(1, 2, 1, 999.99, 999.99),
-(1, 3, 1, 399.99, 399.99),
-(2, 4, 1, 799.99, 799.99),
-(2, 5, 1, 399.00, 399.00),
-(3, 7, 1, 149.99, 149.99);
+--tabla cliente_producto
+CREATE TABLE customer_products (
+    id BIGSERIAL PRIMARY KEY,
+    customer_id BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
+    account_number VARCHAR(30) UNIQUE NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE,
+    status VARCHAR(20) DEFAULT 'ACTIVO',
+    balance DECIMAL(18,2),   
+    contract_number VARCHAR(30),
+    channel_origin VARCHAR(50),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_customer_status CHECK (status IN ('ACTIVO', 'INACTIVO', 'SUSPENDIDO', 'CERRADO')),	
+    CONSTRAINT chk_channel_origin CHECK (channel_origin IN ('AGENCIA','APP_MÓVIL','CALL_CENTER','WEB') OR channel_origin IS NULL),
+    CONSTRAINT fk_customer_product_product FOREIGN KEY (product_id) REFERENCES products(id)	
+);
+
+CREATE INDEX idx_cp_customer_id ON customer_product(customer_id);
+CREATE INDEX idx_cp_product_id ON customer_product(product_id);
+CREATE INDEX idx_cp_customer_status ON customer_product(customer_id, status);
+CREATE INDEX idx_cp_status ON customer_product(status);
+CREATE INDEX idx_cp_channel_origin ON customer_product(channel_origin);
+
+
+--Data de prueba para productos
+
+-- Cuentas de ahorro y corrientes
+INSERT INTO products  (code, name, type, category, currency, interest_rate, description, status)
+VALUES
+('SAVINGS_BASIC', 'Cuenta de Ahorros Clásica', 'AHORRO', 'Cuenta básica', 'PEN', 0.50, 'Cuenta de ahorros sin costo de mantenimiento.', 'ACTIVO'),
+('SAVINGS_PLUS', 'Cuenta de Ahorros Plus', 'AHORRO', 'Cuenta premium', 'PEN', 1.00, 'Cuenta con mayor tasa por saldo promedio superior a S/ 5,000.', 'ACTIVO'),
+('CURRENT_ACCOUNT', 'Cuenta Corriente', 'AHORRO', 'Empresarial', 'PEN', 0.00, 'Cuenta para operaciones empresariales con chequera.', 'ACTIVO');
+
+-- Tarjetas de crédito
+INSERT INTO products (code, name, type, category, currency, interest_rate, description, status)
+VALUES
+('CREDIT_CLASSIC', 'Tarjeta de Crédito Clásica', 'CRÉDITO', 'Tarjeta consumo', 'PEN', 45.00, 'Tarjeta con línea de crédito personal y pagos mensuales.', 'ACTIVO'),
+('CREDIT_GOLD', 'Tarjeta de Crédito Gold', 'CRÉDITO', 'Tarjeta consumo', 'USD', 39.00, 'Tarjeta con beneficios internacionales y acumulación de puntos.', 'ACTIVO'),
+('CREDIT_BUSINESS', 'Tarjeta Empresarial', 'CRÉDITO', 'Tarjeta empresarial', 'PEN', 35.00, 'Tarjeta para compras de negocios con control de gastos.', 'ACTIVO');
+
+-- Préstamos
+INSERT INTO products (code, name, type, category, currency, interest_rate, description, status)
+VALUES
+('LOAN_PERSONAL', 'Préstamo Personal', 'CRÉDITO', 'Consumo', 'PEN', 12.50, 'Crédito para necesidades personales con cuotas mensuales fijas.', 'ACTIVO'),
+('LOAN_VEHICLE', 'Préstamo Vehicular', 'CRÉDITO', 'Automotriz', 'PEN', 9.50, 'Financiamiento para compra de autos nuevos o usados.', 'ACTIVO'),
+('LOAN_MORTGAGE', 'Crédito Hipotecario', 'CRÉDITO', 'Vivienda', 'PEN', 8.00, 'Financiamiento para compra o construcción de vivienda.', 'ACTIVO');
+
+-- Depósitos e inversiones
+INSERT INTO products (code, name, type, category, currency, interest_rate, description, status)
+VALUES
+('FIXED_TERM', 'Depósito a Plazo Fijo', 'INVERSIÓN', 'Plazo fijo', 'PEN', 6.00, 'Depósito con tasa fija según plazo contratado.', 'ACTIVO'),
+('MUTUAL_FUND', 'Fondo Mutuo Conservador', 'INVERSIÓN', 'Fondo mutuo', 'PEN', 0.00, 'Inversión colectiva con perfil conservador.', 'ACTIVO');
+
+-- Seguros
+INSERT INTO products (code, name, type, category, currency, interest_rate, description, status)
+VALUES
+('INSURANCE_LIFE', 'Seguro de Vida', 'SEGURO', 'Vida individual', 'PEN', NULL, 'Protección económica ante fallecimiento del asegurado.', 'ACTIVO'),
+('INSURANCE_CARD', 'Seguro contra Fraude en Tarjeta', 'SEGURO', 'Tarjeta', 'PEN', NULL, 'Cobertura ante robos o fraudes con tarjeta.', 'ACTIVO');
+
+--Data de prueba para clientes
+
+INSERT INTO customers (document_type, document_number, first_name, last_name, email, phone, status)
+VALUES
+-- Clientes naturales (DNI)
+('DNI', '45896321', 'María', 'Gonzales', 'maria.gonzales@gmail.com', '987654321', 'ACTIVO'),
+('DNI', '72648953', 'Juan', 'Huamán', 'juan.huaman@gmail.com', '998877665', 'ACTIVO'),
+('DNI', '60421789', 'Carla', 'Ramírez', 'carla.ramirez@yahoo.com', '912345678', 'SUSPENDIDO'),
+
+-- Cliente con carnet de extranjería (CE)
+('CE', 'E1234567', 'John', 'Smith', 'john.smith@hotmail.com', '955667788', 'ACTIVO'),
+
+-- Cliente con pasaporte (PAS)
+('PAS', 'P9876543', 'Sofía', 'Martínez', 'sofia.martinez@gmail.com', '911223344', 'INACTIVO'),
+
+-- Clientes con RUC (empresas)
+('RUC', '20456789123', 'Inversiones Andinas', 'S.A.C.', 'contacto@andinas.com.pe', '014567890', 'ACTIVO'),
+('RUC', '20678912345', 'Servicios del Sur', 'E.I.R.L.', 'ventas@servsur.com.pe', '016789123', 'CERRADO');
+
+
+--Data de prueba para clintes-productos
+INSERT INTO customer_product 
+(customer_id, product_id, account_number, start_date, end_date, status, balance , contract_number, channel_origin)
+VALUES
+-- Juan Pérez - Cuenta de Ahorros
+(1, 1, '001-12345678', '2022-05-10', NULL, 'ACTIVO', 3500.75, 'CTR-20220510-01', 'Banca Móvil'),
+
+-- Juan Pérez - Tarjeta de Crédito
+(1, 4, '4111-1234-5678-9010', '2023-03-15', NULL, 'ACTIVO', -1200.00,'CTR-20230315-02', 'Oficina'),
+
+-- María López - Depósito a Plazo Fijo
+(2, 5, 'DPF-202309-001', '2023-09-01', '2024-09-01', 'ACTIVO', 10000.00,'CTR-20230901-03', 'Web'),
+
+-- Carlos Gómez - Crédito Personal
+(3, 3, 'CR-2022-8899', '2022-02-20', NULL, 'ACTIVO', -5000.00,'CTR-20220220-04', 'Sucursal'),
+
+-- Carlos Gómez - Cuenta Corriente
+(3, 2, '002-99887766', '2021-12-01', NULL, 'ACTIVO', 2500.00,'CTR-20211201-05', 'Banca por Internet');
+
+
+
 ```
 
 ---
