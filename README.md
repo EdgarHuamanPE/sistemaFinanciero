@@ -263,15 +263,25 @@ INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal) V
 **Request:**
 ```json
 {
-  "userId": 1,
-  "items": [
+  "documentType": "DNI",
+  "documentNumber": "70123456",
+  "firstName": "Juan",
+  "lastName": "Pérez",
+  "email": "juan.perez@gmail.com",
+  "phone": "987654321",
+  "status": "ACTIVO"
+  "customerProducts": [
     {
       "productId": 1,
-      "quantity": 2
-    },
-    {
-      "productId": 3,
-      "quantity": 1
+      "account_number": "001-12345678",
+      "start_date": "2022-05-10",
+      "end_date": NULL,
+      "status":"ACTIVO",
+      "balance": 3500.75,
+      "interest_rate": 0.50,
+      "currency": "PEN",
+      "contract_number": "CTR-20220510-01",
+      "channel_origin": "Banca Móvil"
     }
   ]
 }
