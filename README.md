@@ -271,7 +271,7 @@ INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal) V
       "start_date": "2022-05-10",
       "end_date": NULL,
       "status":"ACTIVO",
-      "balance": 3500.75,
+      "balance": 0,
       "contract_number": "CTR-20220510-01",
       "channel_origin": "Banca Móvil"
     },
@@ -281,7 +281,7 @@ INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal) V
       "start_date": "2023-03-15",
       "end_date": NULL,
       "status":"ACTIVO",
-      "balance": -1200.00,
+      "balance": 0,
       "contract_number": "CTR-20230315-02",
       "channel_origin": "Oficina"
     }
