@@ -263,14 +263,8 @@ INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal) V
 **Request:**
 ```json
 {
-  "documentType": "DNI",
-  "documentNumber": "70123456",
-  "firstName": "Juan",
-  "lastName": "Pérez",
-  "email": "juan.perez@gmail.com",
-  "phone": "987654321",
-  "status": "ACTIVO"
-  "customerProducts": [
+  "customerId": 1,
+  "Products": [
     {
       "productId": 1,
       "account_number": "001-12345678",
@@ -302,11 +296,12 @@ INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal) V
 **Response (201 Created):**
 ```json
 {
-  "id": 1,
-  "firstName": "Juan",
-  "lastName": "Pérez",
-  "documentType": "DNI",
-  "documentNumber": "70123456",
+  "customer":  {
+      "id": 1,
+      "firstName": "Juan",
+      "lastName": "Pérez",
+      "documentType": "DNI",
+      "documentNumber": "70123456" },
   "products": [
     {
       "typeProduct": "AHORRO",
