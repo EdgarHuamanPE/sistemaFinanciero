@@ -1,4 +1,4 @@
-<img width="158" height="81" alt="image" src="https://github.com/user-attachments/assets/96e1def9-80ac-4fca-8438-019bcd0006ba" /># 📄 TRABAJO: ORDER SERVICE 
+ 📄 TRABAJO: ORDER SERVICE 
 
 **Módulo:** Spring Boot Experto 
 **Fecha de entrega:** 01/11/2025  
