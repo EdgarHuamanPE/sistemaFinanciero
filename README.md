@@ -1,32 +1,18 @@
- 📄 TRABAJO: ORDER SERVICE 
-
-**Módulo:** Spring Boot Experto 
-**Fecha de entrega:** 01/11/2025  
+ 📄 TRABAJO: CUSTOMER_PRODUCT 
 
 ---
 
 ## 🎯 OBJETIVO
 
-Desarrollar un microservicio de **Gestión de Órdenes (Order Service)** que se integre con los microservicios existentes (**User Service** y **Product Service**) implementando el patrón **Circuit Breaker** para garantizar la resiliencia y alta disponibilidad del sistema ante fallos en servicios externos.
+Desarrollar un microservicio de **bff (bbf-Service)** que se integre con los microservicios existentes (**Customer Service** y **Product Service**) implementando el patrón **bff** para garantizar la adaptacion los microservicios a las necesidades específicas de cada frontend.
 
 ---
 
 ## 📋 DESCRIPCIÓN
 
-En una arquitectura de microservicios para un sistema de e-commerce, se requiere implementar el servicio de gestión de órdenes de compra. Este servicio debe:
+En una arquitectura de microservicios para un sistema de banca, se requiere implementar el servicio de gestión de ventas de productos financieros. Este servicio debe:
 
-1. **Registrar órdenes de compra** que contengan uno o más productos
-2. **Asociar cada orden a un usuario** específico del sistema
-3. **Calcular automáticamente** el monto total de la orden basándose en precios actuales
-4. **Mantener resiliencia** cuando los servicios externos (User Service o Product Service) no estén disponibles
 
-El reto principal es que el Order Service **depende de dos servicios externos**:
-- **User Service**: Para validar usuarios y obtener información del comprador
-- **Product Service**: Para validar productos y obtener precios actuales
-
-Cuando alguno de estos servicios falla o está lento, el Order Service **NO debe caerse ni quedar bloqueado**. Debe continuar operando con información parcial utilizando el patrón Circuit Breaker.
-
----
 
 ## 🏗️ ARQUITECTURA DEL SISTEMA
 
@@ -37,78 +23,33 @@ Cuando alguno de estos servicios falla o está lento, el Order Service **NO debe
 └─────────────────────────────────────────────────────────────┘
 
                   ┌──────────────────┐
-                  │   API Gateway    │
-                  │   Puerto: 8080   │
+                  │   API BFF        │
+                  │   Puerto: 9090   │
                   └────────┬─────────┘
                            │
-              ┌────────────┼────────────┐
-              │            │            │
-              ▼            ▼            ▼
-     ┌────────────┐ ┌────────────┐ ┌────────────┐
-     │   User     │ │  Product   │ │   Order    │
-     │  Service   │ │  Service   │ │  Service   │ ◄── NUEVO
-     │   :8081    │ │   :8082    │ │   :8083    │
-     └──────┬─────┘ └──────┬─────┘ └──────┬─────┘
-            │              │              │
-            │              │              │
-            ▼              ▼              ▼
-       ┌────────┐     ┌─────────┐    ┌────────┐
-       │userdb  │     │productdb│    │orderdb │ ◄── NUEVA BD
-       │ :5432  │     │ :5433   │    │ :5434  │
-       └────────┘     └─────────┘    └────────┘
+              ┌────────────|
+              │            │      
+              ▼            ▼      
+     ┌────────────┐ ┌────────────┐ 
+     │  Customer  │ | Product    │ 
+     │  Service   │ │  Service   │ 
+     │   :9080    │ │   :9081    │ 
+     └──────┬─────┘ └──────┬─────┘ 
+            │              │       
+            │              │              
+            ▼              ▼         
+       ┌───────────┐     ┌─────────┐    
+       │customerdb │     │productdb│    
+       │ :5435     │     │ :5436   │    
+       └───────────┘     └─────────┘    
 
-COMUNICACIÓN:
-Order Service ──(HTTP + Circuit Breaker)──► User Service
-Order Service ──(HTTP + Circuit Breaker)──► Product Service
-```
 
-### Flujo de Datos
-```
-┌─────────────────────────────────────────────────────────────┐
-│  FLUJO: Crear Orden                                          │
-└─────────────────────────────────────────────────────────────┘
-
-Cliente
-  │
-  │ POST /api/orders
-  │ { userId: 1, items: [...] }
-  ▼
-Order Service
-  │
-  ├─► (Circuit Breaker) ──► User Service
-  │                          GET /api/users/1
-  │                          ✅ Usuario válido
-  │
-  ├─► (Circuit Breaker) ──► Product Service
-  │                          GET /api/products/1
-  │                          ✅ Producto válido + precio
-  │
-  ├─► Calcular totales
-  │   quantity × unit_price = subtotal
-  │   Σ subtotals = total_amount
-  │
-  ├─► Guardar en orderdb
-  │   INSERT INTO orders (...)
-  │   INSERT INTO order_items (...)
-  │
-  ▼
-Respuesta 201 Created
-{
-  "id": 1,
-  "orderNumber": "ORD-2025-001",
-  "user": { ... },
-  "items": [ ... ],
-  "totalAmount": 2599.98
-}
-```
-
----
 
 ## 📊 MODELO DE DATOS
 
 ### Diagrama Entidad-Relación
  ```
-  Custumer Service
+  
 ┌─────────────────────────────┐
 │          CUSTOMERS          │
 ├─────────────────────────────┤
@@ -123,17 +64,18 @@ Respuesta 201 Created
 │     created_at              │
 │     updated_at              │
 └─────────────┬───────────────┘
-              │ 1      
-              │         
-              │                         
-              │ N                        
-              ▼                        
+              │       
+              │  Custumer-Service       
+              │    (customer_id)                     
+              │ 
+              ▼                  
+Product-Service              
 ┌─────────────────────────────┐
 │     CUSTOMER_PRODUCTS       │
 ├─────────────────────────────┤
 │ PK  id                      │
-│ FK  customer_id             │
-│     product_id              │
+│     customer_id             │
+│ FK  product_id              │
 │     account_number          │
 │     start_date              |
 |     end_date                |
@@ -143,16 +85,14 @@ Respuesta 201 Created
 |     channel_origin          |
 |     created_at              |
 |     updated_at              │
-└─────────────────────────────┘
-                               
+└──────────────────|──────────┘
+                   |  N          
      product_id    ────────────────────┐
                                        │
                                        │
                                        │
-                                       ▼
-                                 Product Service
-                                  (productdb)
-
+                                       ▼ 1
+                                 
                           ┌─────────────────────────────┐
                           │         PRODUCTS            │
                           ├─────────────────────────────┤
