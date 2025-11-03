@@ -151,7 +151,7 @@ CREATE TABLE products (
     status VARCHAR(20) NOT NULL DEFAULT 'ACTIVO',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT chk_product_status CHECK (status IN ('ACTIVO', 'INACTIVO', 'SUSPENDIDO', 'CERRADO'))			
+    CONSTRAINT chk_product_status CHECK (status IN ('ACTIVO', 'INACTIVO', 'SUSPENDIDO', 'CERRADO'))
 );
 
 CREATE INDEX idx_products_created_at ON products(created_at DESC);
@@ -171,15 +171,16 @@ CREATE TABLE customers (
     phone VARCHAR(20),
     status VARCHAR(20) NOT NULL DEFAULT 'ACTIVO',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,	
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT chk_customer_status CHECK (status IN ('ACTIVO', 'INACTIVO', 'SUSPENDIDO', 'CERRADO')),
-    CONSTRAINT chk_customer_document_type CHECK (document_type IN ('DNI', 'RUC', 'CE', 'PAS'))						
+    CONSTRAINT chk_customer_document_type CHECK (document_type IN ('DNI', 'RUC', 'CE', 'PAS'))
 );
 
-CREATE INDEX idx_customer_document_type ON customer(document_type);
-CREATE INDEX idx_customer_status ON customer(status);
-CREATE INDEX idx_customer_name ON customer(first_name, last_name);
-CREATE INDEX idx_customer_email ON customer(email);
+CREATE INDEX idx_customer_document_type ON customers(document_type);
+CREATE INDEX idx_customer_status ON customers(status);
+CREATE INDEX idx_customer_name ON customers(first_name, last_name);
+CREATE INDEX idx_customer_email ON customers(email);
+
 
 
 --tabla cliente_producto
@@ -188,24 +189,25 @@ CREATE TABLE customer_products (
     customer_id BIGINT NOT NULL,
     product_id BIGINT NOT NULL,
     account_number VARCHAR(30) UNIQUE NOT NULL,
-    start_date DATE NOT NULL,
-    end_date DATE,
+    start_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    end_date TIMESTAMP,
     status VARCHAR(20) DEFAULT 'ACTIVO',
-    balance DECIMAL(18,2),   
+    balance DECIMAL(18,2),
     contract_number VARCHAR(30),
     channel_origin VARCHAR(50),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT chk_customer_status CHECK (status IN ('ACTIVO', 'INACTIVO', 'SUSPENDIDO', 'CERRADO')),	
-    CONSTRAINT chk_channel_origin CHECK (channel_origin IN ('AGENCIA','APP_MÓVIL','CALL_CENTER','WEB') OR channel_origin IS NULL),
-    CONSTRAINT fk_customer_product_product FOREIGN KEY (product_id) REFERENCES products(id)	
+    CONSTRAINT chk_customer_status CHECK (status IN ('ACTIVO', 'INACTIVO', 'SUSPENDIDO', 'CERRADO')),
+    CONSTRAINT chk_channel_origin CHECK (channel_origin IN ('AGENCIA','APP_MOVIL','CALL_CENTER','WEB') OR channel_origin IS NULL),
+    CONSTRAINT fk_customer_product_product FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
-CREATE INDEX idx_cp_customer_id ON customer_product(customer_id);
-CREATE INDEX idx_cp_product_id ON customer_product(product_id);
-CREATE INDEX idx_cp_customer_status ON customer_product(customer_id, status);
-CREATE INDEX idx_cp_status ON customer_product(status);
-CREATE INDEX idx_cp_channel_origin ON customer_product(channel_origin);
+
+CREATE INDEX idx_cp_customer_id ON customer_products(customer_id);
+CREATE INDEX idx_cp_product_id ON customer_products(product_id);
+CREATE INDEX idx_cp_customer_status ON customer_products(customer_id, status);
+CREATE INDEX idx_cp_status ON customer_products(status);
+CREATE INDEX idx_cp_channel_origin ON customer_products(channel_origin);
 
 
 --Data de prueba para productos
@@ -243,6 +245,7 @@ VALUES
 ('INSURANCE_LIFE', 'Seguro de Vida', 'SEGURO', 'Vida individual', 'PEN', NULL, 'Protección económica ante fallecimiento del asegurado.', 'ACTIVO'),
 ('INSURANCE_CARD', 'Seguro contra Fraude en Tarjeta', 'SEGURO', 'Tarjeta', 'PEN', NULL, 'Cobertura ante robos o fraudes con tarjeta.', 'ACTIVO');
 
+
 --Data de prueba para clientes
 
 INSERT INTO customers (document_type, document_number, first_name, last_name, email, phone, status)
@@ -262,25 +265,26 @@ VALUES
 ('RUC', '20456789123', 'Inversiones Andinas', 'S.A.C.', 'contacto@andinas.com.pe', '014567890', 'ACTIVO'),
 ('RUC', '20678912345', 'Servicios del Sur', 'E.I.R.L.', 'ventas@servsur.com.pe', '016789123', 'CERRADO');
 
-
 --Data de prueba para clintes-productos
-INSERT INTO customer_product 
+INSERT INTO customer_products
 (customer_id, product_id, account_number, start_date, end_date, status, balance , contract_number, channel_origin)
 VALUES
 -- Juan Pérez - Cuenta de Ahorros
-(1, 1, '001-12345678', '2022-05-10', NULL, 'ACTIVO', 3500.75, 'CTR-20220510-01', 'Banca Móvil'),
+(1, 1, '001-12345678', '2022-05-10', NULL, 'ACTIVO', 3500.75, 'CTR-20220510-01', 'WEB'),
 
 -- Juan Pérez - Tarjeta de Crédito
-(1, 4, '4111-1234-5678-9010', '2023-03-15', NULL, 'ACTIVO', -1200.00,'CTR-20230315-02', 'Oficina'),
+(1, 4, '4111-1234-5678-9010', '2023-03-15', NULL, 'ACTIVO', -1200.00,'CTR-20230315-02', 'WEB'),
 
 -- María López - Depósito a Plazo Fijo
-(2, 5, 'DPF-202309-001', '2023-09-01', '2024-09-01', 'ACTIVO', 10000.00,'CTR-20230901-03', 'Web'),
+(2, 5, 'DPF-202309-001', '2023-09-01', '2024-09-01', 'ACTIVO', 10000.00,'CTR-20230901-03', 'CALL_CENTER'),
 
 -- Carlos Gómez - Crédito Personal
-(3, 3, 'CR-2022-8899', '2022-02-20', NULL, 'ACTIVO', -5000.00,'CTR-20220220-04', 'Sucursal'),
+(3, 3, 'CR-2022-8899', '2022-02-20', NULL, 'ACTIVO', -5000.00,'CTR-20220220-04', 'APP_MOVIL'),
 
 -- Carlos Gómez - Cuenta Corriente
-(3, 2, '002-99887766', '2021-12-01', NULL, 'ACTIVO', 2500.00,'CTR-20211201-05', 'Banca por Internet');
+(3, 2, '002-99887766', '2021-12-01', NULL, 'ACTIVO', 2500.00,'CTR-20211201-05', 'AGENCIA');
+
+
 
 
 
