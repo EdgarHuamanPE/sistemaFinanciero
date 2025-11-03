@@ -42,7 +42,7 @@ En una arquitectura de microservicios para un sistema de banca, se requiere impl
        │customerdb │     │productdb│    
        │ :5435     │     │ :5436   │    
        └───────────┘     └─────────┘    
-
+```
 
 
 ## 📊 MODELO DE DATOS
