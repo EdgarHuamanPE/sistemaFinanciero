@@ -111,19 +111,49 @@ Product-Service
 
 ```
 
-### Tabla: orders
+## Tabla: `products`
 
-| Campo | Tipo | Restricciones | Descripción |
-|-------|------|---------------|-------------|
-| `id` | BIGSERIAL | PRIMARY KEY | ID único de la orden |
-| `order_number` | VARCHAR(50) | UNIQUE, NOT NULL | Número de orden (ej: ORD-2025-001) |
-| `user_id` | BIGINT | NOT NULL | ID del usuario (ref. externa) |
-| `status` | VARCHAR(20) | NOT NULL, DEFAULT 'PENDING' | Estado de la orden |
-| `total_amount` | NUMERIC(10,2) | NOT NULL, >= 0 | Monto total |
-| `created_at` | TIMESTAMP | NOT NULL, DEFAULT NOW() | Fecha de creación |
-| `updated_at` | TIMESTAMP | NOT NULL, DEFAULT NOW() | Fecha de actualización |
+Tabla que almacena los productos financieros disponibles en el sistema.
 
-**Estados válidos:** `PENDING`, `CONFIRMED`, `SHIPPED`, `DELIVERED`, `CANCELLED`
+### Estructura de la tabla
+
+| Columna        | Tipo              | Restricciones / Valor por defecto                             | Descripción |
+|----------------|-----------------|---------------------------------------------------------------|-------------|
+| `id`           | BIGSERIAL        | PRIMARY KEY                                                   | Identificador único del producto |
+| `code`         | VARCHAR(20)      | NOT NULL, UNIQUE                                              | Código único del producto |
+| `name`         | VARCHAR(100)     | NOT NULL                                                      | Nombre del producto |
+| `type`         | VARCHAR(50)      | NOT NULL                                                      | Tipo de producto (ej. ahorro, crédito) |
+| `category`     | VARCHAR(50)      |                                                               | Categoría del producto |
+| `currency`     | VARCHAR(3)       |                                                               | Moneda del producto (ej. PEN, USD) |
+| `interest_rate`| DECIMAL(5,2)     |                                                               | Tasa de interés asociada al producto |
+| `description`  | VARCHAR(255)     |                                                               | Descripción del producto |
+| `status`       | VARCHAR(20)      | NOT NULL, DEFAULT `'ACTIVO'`, CHECK (`'ACTIVO', 'INACTIVO', 'SUSPENDIDO', 'CERRADO'`) | Estado del producto |
+| `created_at`   | TIMESTAMP        | NOT NULL, DEFAULT CURRENT_TIMESTAMP                           | Fecha de creación del registro |
+| `updated_at`   | TIMESTAMP        | NOT NULL, DEFAULT CURRENT_TIMESTAMP                           | Fecha de última actualización |
+
+### Índices
+
+| Índice                        | Columnas                  | Propósito |
+|--------------------------------|---------------------------|-----------|
+| `idx_products_created_at`      | `created_at DESC`         | Optimiza consultas por fecha de creación más reciente |
+| `idx_products_type`            | `type`                    | Optimiza consultas por tipo de producto |
+| `idx_products_category`        | `category`                | Optimiza consultas por categoría |
+| `idx_products_type_category`   | `type, category`          | Optimiza consultas combinadas por tipo y categoría |
+| `idx_products_status`          | `status`                  | Optimiza consultas por estado del producto |
+
+### Restricciones adicionales
+
+- `code` debe ser único para cada producto.
+- `status` solo puede contener los valores: `'ACTIVO'`, `'INACTIVO'`, `'SUSPENDIDO'`, `'CERRADO'`.
+
+---
+
+Este formato lo puedes copiar directamente a tu README para documentar la tabla de productos.  
+
+Si quieres, también puedo hacer una **versión visual con esquema de tabla y relaciones** lista para incluir en README.  
+
+¿Quieres que haga eso también?
+
 
 ### Tabla: order_items
 
@@ -294,166 +324,6 @@ VALUES
 
 ## 🎯 REQUERIMIENTOS FUNCIONALES
 
-### RF-01: Crear Orden de Compra
-
-**Endpoint:** `POST /api/orders`
-
-**Request:**
-```json
-{
-  "customerId": 1,
-  "Products": [
-    {
-      "productId": 1,
-      "account_number": "001-12345678",
-      "start_date": "2022-05-10",
-      "end_date": NULL,
-      "status":"ACTIVO",
-      "balance": 0,
-      "contract_number": "CTR-20220510-01",
-      "channel_origin": "Banca Móvil"
-    },
-     {
-      "productId": 4,
-      "account_number": "4111-1234-5678-9010",
-      "start_date": "2023-03-15",
-      "end_date": NULL,
-      "status":"ACTIVO",
-      "balance": 0,
-      "contract_number": "CTR-20230315-02",
-      "channel_origin": "Oficina"
-    }
-  ]
-}
-```
-
-**Response (201 Created):**
-```json
-{
-  "customer":  {
-      "id": 1,
-      "firstName": "Juan",
-      "lastName": "Pérez",
-      "documentType": "DNI",
-      "documentNumber": "70123456" },
-  "products": [
-    {
-      "typeProduct": "AHORRO",
-      "name": "Cuenta de Ahorros Clásica",
-      "balance": 3500.75
-    },
-     {
-      "typeProduct": "CRÉDITO",
-      "name": "Préstamo Personal",
-      "balance": -1200.00
-    },
-
-  ],
-}
-```
-
-**Proceso:**
-1. Validar usuario llamando a User Service
-2. Para cada item:
-   - Validar producto en Product Service
-   - Obtener precio actual
-   - Calcular subtotal
-3. Calcular total de la orden
-4. Generar número de orden único
-5. Guardar en BD
-6. Retornar orden completa
-
-### RF-02: Obtener Orden Completa
-
-**Endpoint:** `GET /api/orders/{id}`
-
-**Response (200 OK):**
-```json
-{
-  "id": 1,
-  "orderNumber": "ORD-2025-001",
-  "user": { ... },
-  "items": [ ... ],
-  "totalAmount": 2599.98,
-  "status": "CONFIRMED",
-  "createdAt": "2025-01-20T10:30:00",
-  "updatedAt": "2025-01-20T11:00:00"
-}
-```
-
----
+### RF-01: Crear customer
 
 
-## 📦 ESTRUCTURA DEL PROYECTO
-```
-order-service/
-├── src/main/java/com/tecsup/orderservice/
-│   ├── OrderServiceApplication.java
-│   ├── controller/
-│   │   └── OrderController.java
-│   ├── service/
-│   │   ├── OrderService.java
-│   │   └── OrderItemService.java
-│   ├── client/
-│   │   ├── User.java          
-│   │   ├── UserClient.java          ← Circuit Breaker
-│   │   ├── Product.java 
-│   │   └── ProductClient.java       ← Circuit Breaker
-│   ├── entity/
-│   │   ├── OrderEntity.java
-│   │   └── OrderItemEntity.java
-│   ├── dto/
-│   │   ├── Order.java
-│   │   ├── OrderItem.java
-│   │   └── CreateOrderRequest.java
-│   ├── repository/
-│   │   ├── OrderRepository.java
-│   │   └── OrderItemRepository.java
-│   ├── mapper/
-│   │   ├── OrderMapper.java
-│   │   └── OrderItemMapper.java
-│   └── config/
-│       └── AppConfig.java
-└── src/main/resources/
-    ├── application.yml
-    ├── bootstrap.yml
-    └── db/migration/
-        └── V1__INIT_SCHEMA.sql
-```
-
----
-
-## 📋 ENTREGABLES
-
-### 1. Código Fuente
-- [ ] Proyecto completo de Order Service
-- [ ] Código limpio y comentado
-- [ ] Estructura organizada
-
-### 2. Base de Datos
-- [ ] Script SQL (`V1__INIT_SCHEMA.sql`)
-- [ ] Datos de prueba (mínimo 3 órdenes)
-
-### 3. Configuración
-- [ ] `application.yml` completo
-- [ ] `bootstrap.yml` completo
-- [ ] `config-repo/order-service.yml` con Circuit Breaker
-- [ ] `docker-compose.yml` actualizado
-
----
-
-## 🎓 CRITERIOS DE EVALUACIÓN
-
-| Criterio | Puntos |
-|----------|--------|
-| Funcionalidad completa | 4 |
-| Circuit Breaker User Service | 3 |
-| Circuit Breaker Product Service | 3 |
-| Fallback Methods correctos | 2 |
-| Base de Datos (esquema + datos) | 2 |
-| Pruebas (5 casos ejecutados) | 3 |
-| Código limpio y organizado | 1 |
-| **TOTAL** | **20** |
-
-
----
